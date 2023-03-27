@@ -1,0 +1,75 @@
+
+model
+{
+	#Likelihood
+	for (i in 1:n) {
+		Mortalidad[i] ~ dbern(mu[i])
+    # Modelo de regresión con liga logística
+    #logit(mu[i]) <- beta0 + beta1[Anestesia[i]] + beta2[Complica[i]] + beta3*Edad[i] + 
+		#beta4[Escolaridad[i]] + beta5[Estado_civil[i]] + beta6[Forma_nac[i]] + 
+		#beta7[TipoHosp[i]] + beta8[Ind_cesarea[i]] + beta9[Monitoreo[i]] + 
+		#beta10*Peso_madre[i] + beta11*Peso_prod[i]
+        
+    # Modelo de regresión con liga probit 
+    #mu[i] <- phi(beta0 + beta1[Anestesia[i]] + beta2[Complica[i]] + beta3*Edad[i] + 
+		#beta4[Escolaridad[i]] + beta5[Estado_civil[i]] + beta6[Forma_nac[i]] + 
+		#beta7[TipoHosp[i]] + beta8[Ind_cesarea[i]] + beta9[Monitoreo[i]] + 
+		#beta10*Peso_madre[i] + beta11*Peso_prod[i]) 
+        
+    # Modelo de regresión con liga log-log 
+    #eta[i] <- beta0 + beta1[Anestesia[i]] + beta2[Complica[i]] + beta3*Edad[i] + 
+		#beta4[Escolaridad[i]] + beta5[Estado_civil[i]] + beta6[Forma_nac[i]] + 
+		#beta7[TipoHosp[i]] + beta8[Ind_cesarea[i]] + beta9[Monitoreo[i]] + 
+		#beta10*Peso_madre[i] + beta11*Peso_prod[i]
+    #mu[i] <- exp(-exp(eta[i]))
+
+    # Modelo de regresión con liga c-log-log 
+    cloglog(mu[i]) <- beta0 + beta1[Anestesia[i]] + beta2[Complica[i]] + beta3*Edad[i] + 
+		beta4[Escolaridad[i]] + beta5[Estado_civil[i]] + beta6[Forma_nac[i]] + 
+		beta7[TipoHosp[i]] + beta8[Ind_cesarea[i]] + beta9[Monitoreo[i]] + 
+		beta10*Peso_madre[i] + beta11*Peso_prod[i]
+        
+	}
+	#Priors
+	beta0 ~ dnorm(0,0.001)
+	beta3 ~ dnorm(0,0.001)
+	beta10 ~ dnorm(0,0.001)
+	beta11 ~ dnorm(0,0.001)
+	# Priors de las variables categóricas que son binarias 
+	for (i in 1:2){
+		beta1[i] ~ dnorm(0,100)
+		beta2[i] ~ dnorm(0,100)
+		beta6[i] ~ dnorm(0,100)
+		beta7[i] ~ dnorm(0,100)
+		beta9[i] ~ dnorm(0,100)
+	}
+	# Priors de las variables categóricas que de varias categorías 
+	for (i in 1:4){
+		beta4[i] ~ dnorm(0,100)
+		beta5[i] ~ dnorm(0,100)
+	}
+	for (i in 1:6){
+		beta8[i] ~ dnorm(0,100)
+	}
+	# Vamos a establecer el constraint: 
+	# beta0 + beta1 + beta2 + beta4 + beta5 + beta6 + 
+  # beta7 + beta8 + beta9 = 0 
+	alpha.est <- beta0 +mean(beta1[])+mean(beta2[])+
+				mean(beta4[]) + mean(beta5[]) + 
+				mean(beta6[])+mean(beta7[])+
+				mean(beta8[]) + mean(beta9[])
+  for (i in 1:2){
+		beta1.est[i] <- beta1[i] - mean(beta1[])
+		beta2.est[i] <- beta2[i] - mean(beta2[])
+		beta6.est[i] <- beta6[i] - mean(beta6[])
+		beta7.est[i] <- beta7[i] - mean(beta7[])
+		beta9.est[i] <- beta9[i] - mean(beta9[])
+	}
+  for(i in 1:4){
+    beta4.est[i] <- beta4[i] - mean(beta4[])
+    beta5.est[i] <- beta5[i] - mean(beta5[])
+  }
+  for(i in 1:6){
+    beta8.est[i] <- beta8[i] - mean(beta8[])
+  }
+}
